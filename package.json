@@ -1,0 +1,40 @@
+{
+  "name": "realtime-galaxies-sst",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npm run sst:load:all; npm run sst",
+    "unlock": "npx sst unlock --stage development",
+    "sst": "npx sst dev --stage development",
+    "sst:load:all": "npm run sst:load:dev; npm run sst:load:staging; npm run sst:load:production;",
+    "sst:load:dev": "npx sst secret load .env.local --stage development; npm run sst:deploy:development",
+    "sst:load:staging": "npx sst secret load .env.local --stage staging",
+    "sst:load:production": "npx sst secret load .env.local --stage production",
+    "sst:deploy:development": "npx sst deploy --stage development",
+    "sst:deploy:staging": "npx sst deploy --stage staging",
+    "sst:deploy:prod": "npx sst deploy --stage production",
+    "sst:remove:prod:forever": "npx sst remove --stage production",
+    "sst:remove:staging:forever": "npx sst remove --stage staging",
+    "sst:remove:dev": "npx sst dev --stage development",
+    "db": "prisma generate;",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.986.0",
+    "@aws-sdk/client-dynamodb": "^3.986.0",
+    "@aws-sdk/lib-dynamodb": "^3.986.0",
+    "@aws-sdk/util-dynamodb": "^3.986.0",
+    "@prisma/client": "6.19",
+    "@types/aws-lambda": "^8.10.160",
+    "aws-lambda": "^1.0.7",
+    "dotenv": "^17.2.4",
+    "mongodb": "^7.1.0",
+    "prisma": "6.19",
+    "sst": "^3.17.38"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

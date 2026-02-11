@@ -1,0 +1,10 @@
+
+# sst
+.sst
+
+.env.local
+.env
+
+node_modules
+
+.sst

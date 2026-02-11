@@ -1,0 +1,183 @@
+// Prisma schema for Better Auth
+// learn more: https://better-auth.com/docs/concepts/database
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id   String @id @map("_id")
+  name String
+
+  //
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String
+
+  @@index([name])
+}
+
+model User {
+  id            String    @id @map("_id")
+  name          String //@db.Text
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String? //@db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  posts         Post[]
+
+  agentObjects AgentObject[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @map("_id")
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String? //@db.Text
+  userAgent String? //@db.Text
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @map("_id")
+  accountId             String //@db.Text
+  providerId            String //@db.Text
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String? //@db.Text
+  refreshToken          String? //@db.Text
+  idToken               String? //@db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String? //@db.Text
+  password              String? //@db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @map("_id")
+  identifier String //@db.Text
+  value      String //@db.Text
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
+
+//
+
+// model Team {
+//   id               String            @id @map("_id") 
+//   name             String
+//   slug             String            @unique
+//   description      String?
+//   teamMembers      TeamMember[]
+//   teamVault         TeamVault[]
+
+//   createdAt             DateTime?  @default(now())
+//   updatedAt             DateTime?  @updatedAt
+// }
+
+// model TeamVault {
+//   id    String @id @map("_id") 
+
+//   // 
+//   openRouterAPIKey  String
+//   replicateAPIKey String
+//   falAPIKey String
+
+//   team   Team   @relation(fields: [teamId], references: [id])
+//   teamId String
+// }
+
+// model TeamMember {
+//   id    String @id @map("_id") 
+//   email String
+//   role  String
+
+//   team   Team   @relation(fields: [teamId], references: [id])
+//   teamId String
+
+//   @@index([email])
+// }
+
+// type S3MetaData {
+//   userID String
+//   fileName String
+//   bucket String
+//   url String
+//   fileKey String
+//   cdn String
+//   uploadURL String
+// }
+//   thumbFile S3MetaData?
+
+model AgentObject {
+  id String @id @map("_id")
+
+  name        String
+  description String
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  agentSecret AgentSecret[]
+
+  botStatus String?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model AgentMessage {
+  id String @id @map("_id")
+
+  toAgentObjectId String
+  toAgentName     String
+
+  fromAgentObjectId String
+  fromAgentName     String
+
+  message String
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model AgentSecret {
+  id String @id @map("_id")
+
+  apiKey           String
+  claimToken       String
+  verificationCode String
+
+  agentObject   AgentObject @relation(fields: [agentObjectId], references: [id])
+  agentObjectId String
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
