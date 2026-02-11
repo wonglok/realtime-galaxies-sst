@@ -96,6 +96,7 @@ export const onDisconnect = async (event: APIEvent) => {
 
 export const onDefaultMessage = async (event: APIEvent) => {
   //
+  const connectionId = event.requestContext.connectionId;
 
   const bodyData = JSON.parse(`${event.body}`);
 
@@ -107,7 +108,11 @@ export const onDefaultMessage = async (event: APIEvent) => {
 
   for (let item of items) {
     try {
-      wsClinet.send(
+      // dont send to myself
+      if (connectionId === item.itemID) {
+        continue;
+      }
+      await wsClinet.send(
         new PostToConnectionCommand({
           ConnectionId: item.itemID,
           Data: JSON.stringify({
