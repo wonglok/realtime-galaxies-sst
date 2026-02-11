@@ -79,13 +79,7 @@ export const onConnect = async (event: APIEvent) => {
 export const onDisconnect = async (event: APIEvent) => {
   //
   const connectionId = event.requestContext.connectionId;
-
-  const queryToken = `${event.queryStringParameters.token || ""}`;
-  const token = queryToken;
-
-  console.log("[connectionId]", connectionId);
-
-  console.log("token", token);
+  console.log("[disconnectionId]", connectionId);
 
   await dynamoClient.send(
     new DeleteItemCommand({
@@ -93,7 +87,6 @@ export const onDisconnect = async (event: APIEvent) => {
       Key: marshall({ itemID: connectionId }),
     }),
   );
-  console.log("[disconnectionId]", connectionId);
 
   return {
     statusCode: 200,
@@ -103,11 +96,42 @@ export const onDisconnect = async (event: APIEvent) => {
 
 export const onDefaultMessage = async (event: APIEvent) => {
   //
-  console.log("onDefaultMessage", JSON.parse(`${event.body}`));
+
+  const bodyData = JSON.parse(`${event.body}`);
+
+  console.log("onDefaultMessage-bodyData", bodyData);
 
   const items = await scanAllItems(Resource.MyConnectionTable.name);
 
   console.log(items);
+
+  for (let item of items) {
+    try {
+      wsClinet.send(
+        new PostToConnectionCommand({
+          ConnectionId: item.itemID,
+          Data: JSON.stringify({
+            //
+            ...bodyData,
+            abc: "123",
+            //
+          }),
+        }),
+      );
+    } catch (e) {
+      console.error(e);
+      await dynamoClient
+        .send(
+          new DeleteItemCommand({
+            TableName: Resource.MyConnectionTable.name,
+            Key: marshall({ itemID: item.itemID }),
+          }),
+        )
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  }
 
   return {
     statusCode: 200,
