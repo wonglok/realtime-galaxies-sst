@@ -40,28 +40,36 @@ const wsClinet = new ApiGatewayManagementApiClient({
 export const onConnect = async (event: APIEvent) => {
   const connectionId = event.requestContext.connectionId;
 
-  const queryToken = `${event.queryStringParameters.token || ""}`;
+  // securirty start
+  // securirty start
+  // securirty start
+  // securirty start
+  const queryToken = `${event?.queryStringParameters?.token || ""}`;
   const token = queryToken;
 
   console.log("[connectionId]", connectionId);
 
   console.log("token", token);
 
-  const agentSecret = await prismaDB.agentSecret.findFirstOrThrow({
-    where: {
-      //
-      apiKey: token,
-    },
-  });
+  // const agentSecret = await prismaDB.agentSecret.findFirstOrThrow({
+  //   where: {
+  //     //
+  //     apiKey: token,
+  //   },
+  // });
 
-  const agent = await prismaDB.agentObject.findFirstOrThrow({
-    where: {
-      //
-      id: agentSecret.agentObjectId,
-    },
-  });
+  // const agent = await prismaDB.agentObject.findFirstOrThrow({
+  //   where: {
+  //     //
+  //     id: agentSecret.agentObjectId,
+  //   },
+  // });
 
-  console.log(agent, agentSecret);
+  // console.log(agent, agentSecret);
+  // securirty end
+  // securirty end
+  // securirty end
+  // securirty end
 
   await dynamoClient.send(
     new PutItemCommand({
@@ -112,13 +120,16 @@ export const onDefaultMessage = async (event: APIEvent) => {
       if (connectionId === item.itemID) {
         continue;
       }
+
       await wsClinet.send(
         new PostToConnectionCommand({
           ConnectionId: item.itemID,
           Data: JSON.stringify({
             //
             ...bodyData,
-            abc: "123",
+            from: connectionId,
+            to: item.itemID,
+            reply: "GOD is gooooood.",
             //
           }),
         }),
@@ -180,3 +191,5 @@ export const onSendMessage = async (event: APIEvent) => {
     body: JSON.stringify("success"),
   };
 };
+
+//
