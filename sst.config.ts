@@ -100,10 +100,22 @@ export default $config({
       handler: "src/wss/WebSocketService.onDefaultMessage",
     });
 
-    socket.route("onSendMessage", {
+    socket.route("onJoinRoom", {
       link: getRoomsLinks(),
       environment: getEnvironmentData(),
-      handler: "src/wss/WebSocketService.onSendMessage",
+      handler: "src/wss/WebSocketService.onJoinRoom",
+    });
+
+    socket.route("onMove", {
+      link: getRoomsLinks(),
+      environment: getEnvironmentData(),
+      handler: "src/wss/WebSocketService.onMove",
+    });
+
+    socket.route("onLeaveRoom", {
+      link: getRoomsLinks(),
+      environment: getEnvironmentData(),
+      handler: "src/wss/WebSocketService.onLeaveRoom",
     });
 
     return {

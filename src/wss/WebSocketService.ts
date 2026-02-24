@@ -5,5 +5,5 @@ export const onDisconnect = UtilsCode.onDisconnect;
 export const onDefaultMessage = UtilsCode.onDefaultMessage;
 
 export const onJoinRoom = UtilsCode.onJoinRoom;
+export const onMove = UtilsCode.onMove;
 export const onLeaveRoom = UtilsCode.onLeaveRoom;
-export const onSendMessage = UtilsCode.onSendMessage;

@@ -7,7 +7,7 @@ import {
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 
 export const dynamoClient = new DynamoDBClient({});
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
+export const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
 export async function scanAllItems(
   tableName: string,
