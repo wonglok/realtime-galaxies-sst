@@ -193,6 +193,7 @@ export const onJoinRoom = async (event: APIEvent) => {
         itemID: connectionId,
         ...data,
         //
+        signature: body.signature,
         roomID: body.roomID,
         target: body.target || [0, 0, 0],
         position: body.position || [0, 0, 0],
@@ -320,6 +321,7 @@ export const onMove = async (event: APIEvent) => {
         //
         itemID: connectionId,
         ...data,
+        signature: body.signature,
         chosenLobster: body.chosenLobster,
         //
         roomID: body.roomID,
