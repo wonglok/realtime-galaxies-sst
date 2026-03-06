@@ -162,127 +162,127 @@ export const onDefaultMessage = async (event: APIEvent) => {
 };
 
 export const onJoinRoom = async (event: APIEvent) => {
-  //
-  const connectionId = event.requestContext.connectionId;
-  const body = JSON.parse(`${event.body}`);
-  console.log("connectionId", connectionId);
-  console.log("onJoinRoom", body);
+  // //
+  // const connectionId = event.requestContext.connectionId;
+  // const body = JSON.parse(`${event.body}`);
+  // console.log("connectionId", connectionId);
+  // console.log("onJoinRoom", body);
 
-  const data = await dynamoClient
-    .send(
-      new GetItemCommand({
-        TableName: Resource.MyConnectionTable.name,
-        Key: marshall({
-          //
-          itemID: connectionId,
-        }),
-      }),
-    )
-    .then((r) => {
-      if (!r.Item) {
-        throw new Error("not found");
-      }
-      return unmarshall(r.Item);
-    });
+  // const data = await dynamoClient
+  //   .send(
+  //     new GetItemCommand({
+  //       TableName: Resource.MyConnectionTable.name,
+  //       Key: marshall({
+  //         //
+  //         itemID: connectionId,
+  //       }),
+  //     }),
+  //   )
+  //   .then((r) => {
+  //     if (!r.Item) {
+  //       throw new Error("not found");
+  //     }
+  //     return unmarshall(r.Item);
+  //   });
 
-  await dynamoClient.send(
-    new PutItemCommand({
-      TableName: Resource.MyConnectionTable.name,
-      Item: marshall({
-        //
-        itemID: connectionId,
-        ...data,
-        //
-        signature: body.signature,
-        roomID: body.roomID,
-        target: body.target || [0, 0, 0],
-        position: body.position || [0, 0, 0],
-        quaternion: body.quaternion || [0, 0, 0, 1],
-        //
-      }),
-    }),
-  );
+  // await dynamoClient.send(
+  //   new PutItemCommand({
+  //     TableName: Resource.MyConnectionTable.name,
+  //     Item: marshall({
+  //       //
+  //       itemID: connectionId,
+  //       ...data,
+  //       //
+  //       signature: body.signature,
+  //       roomID: body.roomID,
+  //       target: body.target || [0, 0, 0],
+  //       position: body.position || [0, 0, 0],
+  //       quaternion: body.quaternion || [0, 0, 0, 1],
+  //       //
+  //     }),
+  //   }),
+  // );
 
-  const scanParams: ScanCommandInput = {
-    TableName: Resource.MyConnectionTable.name,
-    // Optional: Limit parameter defines the maximum number of items evaluated in a single request,
-    // but the paginator will continue fetching pages until all items are retrieved or an error occurs.
-    Limit: 5,
+  // const scanParams: ScanCommandInput = {
+  //   TableName: Resource.MyConnectionTable.name,
+  //   // Optional: Limit parameter defines the maximum number of items evaluated in a single request,
+  //   // but the paginator will continue fetching pages until all items are retrieved or an error occurs.
+  //   Limit: 5,
 
-    //
-    FilterExpression: "roomID = :roomIDParams",
-    ExpressionAttributeValues: {
-      ":roomIDParams": {
-        S: body?.roomID || "lobby",
-      },
-    },
-  };
+  //   //
+  //   FilterExpression: "roomID = :roomIDParams",
+  //   ExpressionAttributeValues: {
+  //     ":roomIDParams": {
+  //       S: body?.roomID || "lobby",
+  //     },
+  //   },
+  // };
 
-  const pages = paginateScan({ client: dynamoClient }, scanParams);
-  const list: any[] = [];
+  // const pages = paginateScan({ client: dynamoClient }, scanParams);
+  // const list: any[] = [];
 
-  try {
-    for await (const page of pages) {
-      if (page.Items) {
-        const segment = page.Items.map((it) => {
-          return unmarshall(it);
-        });
+  // try {
+  //   for await (const page of pages) {
+  //     if (page.Items) {
+  //       const segment = page.Items.map((it) => {
+  //         return unmarshall(it);
+  //       });
 
-        for await (const item of segment) {
-          //
-          // if (item.itemID === connectionId) {
-          //   continue;
-          // }
+  //       for await (const item of segment) {
+  //         //
+  //         // if (item.itemID === connectionId) {
+  //         //   continue;
+  //         // }
 
-          list.push(item);
-        }
-      }
-    }
+  //         list.push(item);
+  //       }
+  //     }
+  //   }
 
-    for await (const item of list) {
-      try {
-        await wsClinet.send(
-          new PostToConnectionCommand({
-            ConnectionId: item.itemID,
-            Data: JSON.stringify({
-              //
-              players: list.map((r) => {
-                return {
-                  signature: r.signature,
-                  isMe: connectionId === r.itemID,
-                  target: r.target,
-                  position: r.position,
-                  quaternion: r.quaternion,
-                  itemID: r.itemID,
-                };
-              }),
-              //
-            }),
-          }),
-        );
-        list.push(item);
-      } catch (e) {
-        await dynamoClient
-          .send(
-            new DeleteItemCommand({
-              //
-              TableName: Resource.MyConnectionTable.name,
-              Key: marshall({
-                itemID: item.itemID,
-              }),
-            }),
-          )
-          .catch((er) => {
-            console.error(er);
-          });
-      }
-    }
+  //   for await (const item of list) {
+  //     try {
+  //       await wsClinet.send(
+  //         new PostToConnectionCommand({
+  //           ConnectionId: item.itemID,
+  //           Data: JSON.stringify({
+  //             //
+  //             players: list.map((r) => {
+  //               return {
+  //                 signature: r.signature,
+  //                 isMe: connectionId === r.itemID,
+  //                 target: r.target,
+  //                 position: r.position,
+  //                 quaternion: r.quaternion,
+  //                 itemID: r.itemID,
+  //               };
+  //             }),
+  //             //
+  //           }),
+  //         }),
+  //       );
+  //       list.push(item);
+  //     } catch (e) {
+  //       await dynamoClient
+  //         .send(
+  //           new DeleteItemCommand({
+  //             //
+  //             TableName: Resource.MyConnectionTable.name,
+  //             Key: marshall({
+  //               itemID: item.itemID,
+  //             }),
+  //           }),
+  //         )
+  //         .catch((er) => {
+  //           console.error(er);
+  //         });
+  //     }
+  //   }
 
-    console.log(`Total items retrieved: ${list.length}`);
-  } catch (error) {
-    console.error("Error during scan pagination:", error);
-    throw error;
-  }
+  //   console.log(`Total items retrieved: ${list.length}`);
+  // } catch (error) {
+  //   console.error("Error during scan pagination:", error);
+  //   throw error;
+  // }
 
   return {
     statusCode: 200,
@@ -420,99 +420,99 @@ export const onMove = async (event: APIEvent) => {
 };
 
 export const onLeaveRoom = async (event: APIEvent) => {
-  //
-  const connectionId = event.requestContext.connectionId;
-  const body = JSON.parse(`${event.body}`);
-  console.log("connectionId", connectionId);
-  console.log("onJoinRoom", body);
+  // //
+  // const connectionId = event.requestContext.connectionId;
+  // const body = JSON.parse(`${event.body}`);
+  // console.log("connectionId", connectionId);
+  // console.log("onJoinRoom", body);
 
-  await dynamoClient.send(
-    new DeleteItemCommand({
-      TableName: Resource.MyConnectionTable.name,
-      Key: marshall({
-        //
-        itemID: connectionId,
-      }),
-    }),
-  );
+  // await dynamoClient.send(
+  //   new DeleteItemCommand({
+  //     TableName: Resource.MyConnectionTable.name,
+  //     Key: marshall({
+  //       //
+  //       itemID: connectionId,
+  //     }),
+  //   }),
+  // );
 
-  const scanParams: ScanCommandInput = {
-    TableName: Resource.MyConnectionTable.name,
-    // Optional: Limit parameter defines the maximum number of items evaluated in a single request,
-    // but the paginator will continue fetching pages until all items are retrieved or an error occurs.
-    Limit: 5,
-    FilterExpression: "roomID = :roomIDParams",
-    ExpressionAttributeValues: {
-      ":roomIDParams": {
-        S: body?.roomID || "lobby",
-      },
-    },
-  };
+  // const scanParams: ScanCommandInput = {
+  //   TableName: Resource.MyConnectionTable.name,
+  //   // Optional: Limit parameter defines the maximum number of items evaluated in a single request,
+  //   // but the paginator will continue fetching pages until all items are retrieved or an error occurs.
+  //   Limit: 5,
+  //   FilterExpression: "roomID = :roomIDParams",
+  //   ExpressionAttributeValues: {
+  //     ":roomIDParams": {
+  //       S: body?.roomID || "lobby",
+  //     },
+  //   },
+  // };
 
-  const pages = paginateScan({ client: dynamoClient }, scanParams);
-  const list: any[] = [];
+  // const pages = paginateScan({ client: dynamoClient }, scanParams);
+  // const list: any[] = [];
 
-  try {
-    for await (const page of pages) {
-      if (page.Items) {
-        const segments = page.Items.map((it) => {
-          return unmarshall(it);
-        });
-        list.push(...segments);
-      }
-    }
+  // try {
+  //   for await (const page of pages) {
+  //     if (page.Items) {
+  //       const segments = page.Items.map((it) => {
+  //         return unmarshall(it);
+  //       });
+  //       list.push(...segments);
+  //     }
+  //   }
 
-    for await (const item of list) {
-      //
-      if (item.itemID === connectionId) {
-        continue;
-      }
+  //   for await (const item of list) {
+  //     //
+  //     if (item.itemID === connectionId) {
+  //       continue;
+  //     }
 
-      try {
-        await wsClinet.send(
-          new PostToConnectionCommand({
-            ConnectionId: item.itemID,
-            Data: JSON.stringify({
-              //
-              players: list.map((r) => {
-                return {
-                  signature: r.signature,
-                  isMe: connectionId === r.itemID,
-                  chosenLobster: r.chosenLobster,
-                  target: r.target,
-                  position: r.position,
-                  quaternion: r.quaternion,
-                  itemID: r.itemID,
-                };
-              }),
-              //
-            }),
-          }),
-        );
+  //     try {
+  //       await wsClinet.send(
+  //         new PostToConnectionCommand({
+  //           ConnectionId: item.itemID,
+  //           Data: JSON.stringify({
+  //             //
+  //             players: list.map((r) => {
+  //               return {
+  //                 signature: r.signature,
+  //                 isMe: connectionId === r.itemID,
+  //                 chosenLobster: r.chosenLobster,
+  //                 target: r.target,
+  //                 position: r.position,
+  //                 quaternion: r.quaternion,
+  //                 itemID: r.itemID,
+  //               };
+  //             }),
+  //             //
+  //           }),
+  //         }),
+  //       );
 
-        //
-      } catch (e) {
-        await dynamoClient
-          .send(
-            new DeleteItemCommand({
-              //
-              TableName: Resource.MyConnectionTable.name,
-              Key: marshall({
-                itemID: item.itemID,
-              }),
-            }),
-          )
-          .catch((er) => {
-            console.error(er);
-          });
-      }
-    }
+  //       //
+  //     } catch (e) {
+  //       await dynamoClient
+  //         .send(
+  //           new DeleteItemCommand({
+  //             //
+  //             TableName: Resource.MyConnectionTable.name,
+  //             Key: marshall({
+  //               itemID: item.itemID,
+  //             }),
+  //           }),
+  //         )
+  //         .catch((er) => {
+  //           console.error(er);
+  //         });
+  //     }
+  //   }
 
-    console.log(`Total items retrieved: ${list.length}`);
-  } catch (error) {
-    console.error("Error during scan pagination:", error);
-    throw error;
-  }
+  //   console.log(`Total items retrieved: ${list.length}`);
+  // } catch (error) {
+  //   console.error("Error during scan pagination:", error);
+  //   throw error;
+  // }
 
   return {
     statusCode: 200,
